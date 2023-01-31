@@ -1,11 +1,8 @@
 package main
 
-import (
-	"fmt"
-) 
-
+/*
 func main() {
-	/*
+
 	   //fmt.Print("Hello world\n")
 	   fmt.Println("Hello world")
 	   // Print("hello ")
@@ -30,7 +27,7 @@ func main() {
 	   name6 := "tarun"
 
 	   fmt.Println(name6)
-	*/
+
 	greetingMessage := Greeting("tarun")
 	fmt.Println(greetingMessage)
 
@@ -39,9 +36,9 @@ func main() {
 	fmt.Println(v1)
 	v1="asdasd"
 
-	
 
-	
+
+
 
 }
 
@@ -67,7 +64,8 @@ func GreetingWithNamedOutputParam(personName string) (greetingMessage string) {
 //GreetingWithVarNumOfParam("tarun","rahul","kanit","asad","asdasd")
 
 func GreetingWithVarNumOfParam(personNames ...string) (greetingMessages []string){
-	
+
 
 	return
 }
+*/

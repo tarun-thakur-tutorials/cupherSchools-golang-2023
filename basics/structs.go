@@ -11,6 +11,12 @@ type NameOfStruct struct{
 type Vertex struct {
 	X int `json:"x"`
 	Y int `json:"y"`
+	Z int `json:"z"`
+}
+
+type Triangle struct {
+	Vertex
+	X int // field X of the Vertex will get shadowed
 }
 
 type MyIntegerDataType int
@@ -30,6 +36,9 @@ func main() {
 
 		g := Vertex{} // x=0, y=0
 	*/
+	newTriangle := Triangle{}
+	fmt.Println(newTriangle.X)
+	fmt.Println(newTriangle.Vertex.X)
 	newVarWithValue := NewVertexWithValue(1, 2)
 	newVar := NewVertex()
 	newVar.SetX(3) // newVar.X=3

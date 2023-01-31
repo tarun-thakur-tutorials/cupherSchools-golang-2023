@@ -21,4 +21,4 @@ var UdhaarAppSymbol = fmt.Sprintf(`%v
         \             /
          \           / 
           \_________/	
-				%v `, Red, White)
+				%v `, Yellow, White)

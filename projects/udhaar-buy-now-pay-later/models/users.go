@@ -1,15 +1,13 @@
 package models
 
-import "github.com/google/uuid"
-
 type User struct {
-	Name          string
-	UniqueEmail   string
-	CreditLimit   float64
-	Dues          float64
-	TransactionID []uuid.UUID
+	Name              string
+	UniquePhoneNumber string
+	CreditLimit       float64
+	Dues              float64
+	// TransactionID     []uuid.UUID
 }
 
-type email = string
+type phoneNumber = string
 
-var UserMap = make(map[email]User)
+var UserMap = make(map[phoneNumber]User)
