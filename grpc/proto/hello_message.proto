@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package hello;
+
+option go_package="./;go_hello";
+
+// structures => messages
+// group of functions => service
+// function => rpc (remote procedure call)
+//1-16
+message HelloMessage {
+string body=1;
+}
+
+/*
+type  HelloMessage struct{
+body string 
+}
+*/
+// MyServiceClient 
+// MyServiceServer
+// go Add(1,2)
+// go Sub(1,2)
+service MyService {
+rpc HelloWorld (HelloMessage) returns (HelloMessage){}
+rpc HelloNeeraj( HelloMessage)returns (HelloMessage){}
+rpc HelloName (HelloMessage)returns(HelloMessage){}
+}
+
+service MyService2 {
+rpc HelloWorld2(HelloMessage)returns(HelloMessage){}
+}
+
