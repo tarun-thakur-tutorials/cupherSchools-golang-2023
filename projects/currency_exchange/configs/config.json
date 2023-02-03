@@ -1,0 +1,6 @@
+{
+  "prod": true,
+  "dbname": "ExchangeRateDb",
+  "pass": "password",
+  "user": "root"
+}
