@@ -1,6 +1,6 @@
 {
   "prod": true,
   "dbname": "ExchangeRateDb",
-  "pass": "password",
+  "pass": "root",
   "user": "root"
 }

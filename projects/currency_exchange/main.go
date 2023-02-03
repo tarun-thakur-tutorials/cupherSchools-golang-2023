@@ -37,4 +37,6 @@ func main() {
 	dbName := viper.Get("dbname")
 
 	database.RegisterDatabase(user.(string), pass.(string), dbName.(string))
+	// _, _ = utils.DownloadXML("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml")
+	database.LoadXMLInDatabase()
 }
