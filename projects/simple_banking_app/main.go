@@ -34,7 +34,8 @@ func Open(amount int64) (*Account, error) {
 	return acc, nil
 }
 
-func (a *Account) Balance() (int64, error) {
+func (a *Account) Balance(wg *sync.WaitGroup) (int64, error) {
+	defer wg.Done()
 	// if the account is active
 	if a.status {
 		fmt.Println("Balance: ", a.balance)
@@ -44,21 +45,23 @@ func (a *Account) Balance() (int64, error) {
 	return 0, fmt.Errorf("account is inactive")
 }
 
-func (a *Account) Deposit(amount int64) (int64, error) {
+func (a *Account) Deposit(amount int64, wg *sync.WaitGroup) (int64, error) {
 	if a.status {
 		// amount less than 0 means withdrawal
 		a.Lock()
 		defer a.Unlock()
 
 		if amount < 0 {
-			bal, err := a.Balance()
+			wg.Add(1)
+			bal, err := a.Balance(wg)
 			if err != nil {
 				fmt.Println(err)
+				wg.Done()
 				return 0, err
 			}
 			if bal+amount < 0 {
 				fmt.Println(fmt.Errorf("not enough balance in the account"))
-
+				wg.Done()
 				return 0, fmt.Errorf("not enough balance in the account")
 			}
 		}
@@ -66,14 +69,16 @@ func (a *Account) Deposit(amount int64) (int64, error) {
 		a.balance += amount
 	} else {
 		fmt.Println(fmt.Errorf("account inactive"))
+		wg.Done()
 		return 0, fmt.Errorf("account inactive")
 	}
 
 	fmt.Println("deposited: ", a.balance)
+	wg.Done()
 	return a.balance, nil
 }
 
-func (a *Account) Close() (int64, error) {
+func (a *Account) Close(wg *sync.WaitGroup) (int64, error) {
 	a.Lock()
 
 	defer a.Unlock()
@@ -81,20 +86,33 @@ func (a *Account) Close() (int64, error) {
 	if a.status {
 		a.status = false
 		fmt.Println("account closed")
+		wg.Done() // marks the completion of goroutine
 		return a.balance, nil
 	}
-
+	wg.Done()
 	return 0, fmt.Errorf("the account is already closed")
 }
 
 func main() {
+	var wg sync.WaitGroup
+
 	a, _ := Open(1000)
 
-	defer a.Close()
-	go a.Deposit(3000)
-	go a.Balance()
-	go a.Deposit(-100)
-	go a.Balance()
+	wg.Add(1)
+	go a.Deposit(3000, &wg)
 
-	time.Sleep(5 * time.Second)
+	wg.Add(1)
+	go a.Balance(&wg)
+
+	wg.Add(1)
+	go a.Deposit(-100, &wg)
+
+	wg.Add(1)
+	go a.Balance(&wg)
+
+	time.Sleep(2 * time.Second)
+	wg.Add(1)
+	a.Close(&wg)
+
+	wg.Wait()
 }
