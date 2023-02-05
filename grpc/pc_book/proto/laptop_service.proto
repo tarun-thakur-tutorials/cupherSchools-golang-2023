@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package pcbook;
+
+import "proto/laptop_message.proto";
+
+option go_package = "./;pcbook";
+
+message CreateLaptopRequest {
+  Laptop laptop = 1;
+}
+
+message CreateLaptopResponse {
+  string id = 1;
+}
+
+message ImageInfo {
+  string laptop_id = 1;
+  string image_type = 2;
+}
+
+message UploadImageRequest {
+  oneof data {
+    ImageInfo info = 1;
+    bytes chunk_data = 2;
+  }
+}
+
+message UploadImageResponse {
+  string id = 1;
+  uint32 size = 2;
+}
+
+service LaptopService {
+  rpc CreateLaptop(CreateLaptopRequest) returns (CreateLaptopResponse) {}
+  rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse) {}
+}

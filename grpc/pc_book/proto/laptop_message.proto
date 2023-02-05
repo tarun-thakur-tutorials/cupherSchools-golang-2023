@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package pcbook;
+
+import "google/protobuf/timestamp.proto";
+import "proto/keyboard_message.proto";
+import "proto/memory_message.proto";
+import "proto/processor_message.proto";
+import "proto/screen_message.proto";
+import "proto/storage_message.proto";
+
+option go_package = "./;pcbook";
+
+message Laptop {
+  string id = 1;
+  string brand = 2;
+  string name = 3;
+
+  oneof weight {
+    double weight_kg = 4;
+    double weight_pound = 5;
+  }
+
+  double price_usd = 6;
+  uint32 release_year = 7;
+
+  google.protobuf.Timestamp updated_at = 8;
+
+  CPU cpu = 9;
+  Memory ram = 10;
+  // a laptop can have multiple GPUs, so we use "repeated" keyword
+  repeated GPU gpu = 11;
+  /*
+     type MyStruct{
+     gpu []GPU
+     }
+  */
+  repeated Storage storage = 12;
+  Screen screen = 13;
+  Keyboard keyboard = 14;
+}
