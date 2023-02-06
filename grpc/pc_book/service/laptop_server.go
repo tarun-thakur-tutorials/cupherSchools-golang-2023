@@ -1,10 +1,13 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	pcbook "pcbook/proto"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -56,4 +59,54 @@ func (l *LaptopServer) CreateLaptop(
 
 	return res, nil
 }
+
 func (l *LaptopServer) mustEmbedUnimplementedLaptopServiceServer() {}
+
+func (server *LaptopServer) UploadImage(stream pcbook.LaptopService_UploadImageServer) error {
+	req, err := stream.Recv()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	laptopId := req.GetInfo().GetLaptopId()
+	imageType := req.GetInfo().GetImageType()
+
+	log.Println("got the request with image type: ", imageType, "and laptop id: ", laptopId)
+
+	imageData := bytes.Buffer{}
+
+	for {
+		log.Println("waiting to recieve more data")
+		time.Sleep(2 * time.Second)
+		req, err := stream.Recv()
+		if err == io.EOF {
+			log.Println("no more data to recieve")
+			break
+		}
+
+		if err != nil {
+			return status.Errorf(codes.Unknown, "cannot recieve the chunk of data: %v", err)
+		}
+
+		chunk := req.GetChunkData()
+
+		_, err = imageData.Write(chunk)
+
+		if err != nil {
+			return status.Errorf(codes.Internal, "cannot write chunk data")
+		}
+	}
+
+	res := &pcbook.UploadImageResponse{Id: laptopId}
+
+	err = stream.SendAndClose(res)
+
+	if err != nil {
+		return status.Error(codes.Unknown, err.Error())
+	}
+
+	fmt.Println("the data is recieved and response is sent")
+
+	return nil
+}

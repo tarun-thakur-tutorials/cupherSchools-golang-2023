@@ -1,9 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
+	"fmt"
+	"io"
 	"log"
+	"os"
+	"path/filepath"
 	pcbook "pcbook/proto"
 	"time"
 
@@ -61,7 +66,7 @@ func main() {
 		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 	defer cancel()
 
 	res, err := laptopClient.CreateLaptop(ctx, req)
@@ -70,4 +75,75 @@ func main() {
 	}
 
 	log.Printf("created the laptop with id: %v\n", res.Id)
+
+	// file stream (upload)
+
+	imgPath := "tmp/test.png"
+	file, err := os.Open(imgPath)
+	if err != nil {
+		log.Fatal("cannot open the image file: ", err)
+	}
+	defer file.Close()
+
+	ctx, cancel = context.WithTimeout(context.Background(), 5000*time.Second)
+	defer cancel()
+
+	stream, err := laptopClient.UploadImage(ctx)
+
+	Imgreq := &pcbook.UploadImageRequest{
+		Data: &pcbook.UploadImageRequest_Info{
+			Info: &pcbook.ImageInfo{
+				LaptopId:  "123421",
+				ImageType: filepath.Ext(imgPath), // filepath is a library for path of the directory
+			},
+		},
+	}
+	err = stream.Send(Imgreq)
+	if err != nil {
+		log.Fatal("cannot send image info: ", err)
+	}
+
+	reader := bufio.NewReader(file)
+
+	buffer := make([]byte, 1024) // size of the chunk = 1024 bytes = 1 kb
+
+	for {
+
+		// time.Sleep(2 * time.Second)
+		n, err := reader.Read(buffer)
+
+		if err == io.EOF {
+			fmt.Println("got EOF")
+			break
+		}
+
+		if err != nil {
+			log.Fatal("cannot read the chunk to the buffer: ", err)
+		}
+
+		req := &pcbook.UploadImageRequest{
+			Data: &pcbook.UploadImageRequest_ChunkData{
+				ChunkData: buffer[:n],
+			},
+		}
+
+		log.Println("sending data \n\n")
+		time.Sleep(2 * time.Second)
+		err = stream.Send(req)
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Fatal("cannot sent stream ", err)
+		}
+	}
+
+	Imgres, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatal("cannot recieve response", err)
+	}
+
+	log.Printf("image is uploaded with id: %v, size: %v\n", Imgres.GetId(), Imgres.GetSize())
 }
